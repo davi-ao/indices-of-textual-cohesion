@@ -12,6 +12,7 @@ lemmas = corpus %>%
 synonyms_hypernyms = mapply(function(lemma, pos) {
   pos_wordnet = NA
   
+  # Map POS in the corpus with the correspondent POS in Wordnet
   if(pos %in% c('VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ')) {
     pos_wordnet = 'VERB'
   } else if (pos %in% c('NN', 'NNS', 'NNP', 'NNPS')) {
@@ -27,8 +28,10 @@ synonyms_hypernyms = mapply(function(lemma, pos) {
   } else {
     tibble(lemma = lemma,
      pos = pos_wordnet,
-     synonyyms = synonyms(lemma, pos_wordnet) %>%
+     # Get synonyms from Wordnet
+     synonyms = synonyms(lemma, pos_wordnet) %>%
        paste(collapse = '|'),
+     # Get hypernyms from Wordnet
      hypernyms = tryCatch({
        filter = getTermFilter('ExactMatchFilter', lemma, T)
        terms = getIndexTerms(pos_wordnet, 1, filter)

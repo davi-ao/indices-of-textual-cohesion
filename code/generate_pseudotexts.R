@@ -17,7 +17,7 @@ pseudotexts = lapply(1:corpus_size, function(i) {
         unite('text_clique_id', text:clique_id) %>%
         .$text_clique_id)) %>%
     group_by(text_clique_id) %>%
-    # Identify pseudotext and reset clique_id
+    # Add unique id to pseudotext and reset clique_id
     mutate(genre = 'pseudotext',
            text = paste0('pseudotext_', str_pad(i, 2, 'left', '0')), 
            clique_id = cur_group_id()) %>%
