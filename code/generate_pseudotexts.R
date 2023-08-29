@@ -1,4 +1,4 @@
-# Load requires packages
+# Load required packages
 library(tidyverse)
 
 # Get the number of texts in the corpus

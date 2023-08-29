@@ -50,4 +50,4 @@ synonyms_hypernyms = mapply(function(lemma, pos) {
   bind_rows()
 
 # Write lemmas with synonyms and hypernyms
-write_csv(pseudotexts, 'data/synonyms_hypernyms.csv')
+write_csv(synonyms_hypernyms, 'data/synonyms_hypernyms.csv')
