@@ -17,7 +17,7 @@ oanc_data = lapply(paste0(oanc_dir, list.files(oanc_dir)), function(f) {
     # Get the children of <fs> elements
     str_extract_all('(?<=<fs>)(.|[\\n\\r])*?(?=<\\/fs>)') %>%
     unlist() %>%
-    # Remove extra whitespace
+    # Remove extra white space
     str_remove_all('[\\n\\r]') %>%
     str_replace_all('\\s{2,}', ' ') %>%
     str_trim() %>%
@@ -64,13 +64,13 @@ oanc_data = lapply(paste0(oanc_dir, list.files(oanc_dir)), function(f) {
 }) %>%
   bind_rows()
 
-# Write OANC procesed data
+# Write OANC processed data
 # write_csv(oanc_data, 'data/oanc_data.csv')
 
 # GET SYNONYMS AND HYPERNYMS FROM WORDNET --------------------------------------
 
 # Get unique lemmas with POS
-lemmas = corpus %>%
+lemmas = oanc_data %>%
   distinct(lemma, pos)
 
 synonyms_hypernyms = mapply(function(lemma, pos) {
@@ -130,16 +130,16 @@ synonyms_hypernyms = mapply(function(lemma, pos) {
 pseudotexts = read_csv('data/oanc_pseudotexts_study.csv')
 
 # Get the number of texts in the corpus
-# corpus_size = corpus$text %>% unique() %>% length()
+# corpus_size = oanc_data$text %>% unique() %>% length()
 
 # Generate pseudotexts
 # pseudotexts = lapply(1:corpus_size, function(i) {
-#   corpus %>%
+#   oanc_data %>%
 #     # Attribute an unique id for each clique in the corpus
 #     unite('text_clique_id', text:clique_id, remove = F) %>%
 #     filter(text_clique_id %in% (
 #       # Get a random sample of cliques, one per text
-#       corpus %>%
+#       oanc_data %>%
 #         group_by(text) %>%
 #         sample_n(1) %>%
 #         unite('text_clique_id', text:clique_id) %>%
@@ -159,7 +159,7 @@ pseudotexts = read_csv('data/oanc_pseudotexts_study.csv')
 
 # JOIN THE DATA ----------------------------------------------------------------
 
-data = corpus %>% 
+data = oanc_data %>% 
   bind_rows(pseudotexts) %>%
   left_join(synonyms_hypernyms, by = c('lemma', 'pos')) %>%
   group_by(text, clique_id) %>%
@@ -204,8 +204,8 @@ global_backward_cohesion = lapply(
       r = intersect(q_i %>% .$stem, G_i %>% .$stem) %>% length(),
       # Calculate the number of cohesion edges
       m_c = (q_i %>% filter(!stem %in% G_i$stem) %>% .$lemma) %in% 
-        (c(G_i %>% .$synonyms %>% str_split_1('\\|'),
-           G_i %>% .$hypernyms %>% str_split_1('\\|')) %>% 
+        (c(G_i %>% .$synonyms %>% str_split('\\|') %>% unlist(),
+           G_i %>% .$hypernyms %>% str_split('\\|') %>% unlist()) %>% 
            unique()) %>%
         sum(),
       # Get the number of vertices in the clique
@@ -267,8 +267,8 @@ local_backward_cohesion = lapply(
       r = intersect(q_i %>% .$stem, q_j %>% .$stem) %>% length(),
       # Calculate the number of cohesion edges
       m_c = (q_i %>% filter(!stem %in% q_j$stem) %>% .$lemma) %in% 
-        (c(q_j %>% .$synonyms %>% str_split_1('\\|'),
-           q_j %>% .$hypernyms %>% str_split_1('\\|')) %>% 
+        (c(q_j %>% .$synonyms %>% str_split('\\|') %>% unlist(),
+           q_j %>% .$hypernyms %>% str_split('\\|') %>% unlist()) %>% 
            unique()) %>%
         sum(),
       # Get the number of vertices in the clique
@@ -294,79 +294,81 @@ local_backward_cohesion = lapply(
   bind_rows()
 
 # Mean Pairwise Cohesion
-
-# Get the list of clique ids
-clique_ids = data %>%
-  .$text_clique_id %>%
-  unique()
-
-# Create matricces that will be populated with the pairwise indices values
-# Vertex cohesion matrix
-pairwise_indices_v = matrix(rep(NA, length(clique_ids)^2), 
-                            length(clique_ids), 
-                            length(clique_ids))
-rownames(pairwise_indices_v) = clique_ids
-colnames(pairwise_indices_v) = clique_ids
-# Edge cohesion matrix
-pairwise_indices_e = matrix(rep(NA, length(clique_ids)^2), 
-                            length(clique_ids), 
-                            length(clique_ids))
-rownames(pairwise_indices_e) = clique_ids
-colnames(pairwise_indices_e) = clique_ids
-
-# Calculate pairwise cohesion values and populate the matricces
-for(i in 1:length(clique_ids)) {
-  # Get the clique rows
-  q_i = data %>% filter(text_clique_id == clique_ids[i])
-  # Get the number of vertices in the clique
-  q_n = q_i %>% nrow()
+mean_pairwise_cohesion_temp = lapply(
+  # Iterate through each clique in the data
+  (data %>%
+     # REMOVER
+     filter(text %in% c('data/oanc_xml/icic_105Cwl040-hepple_clean.xml', 'data/oanc_xml/icic_105CWL062-hepple_clean.xml')) %>%
+     .$text_clique_id %>% 
+     unique()),
+  function(t_q_id) {
+    data_q_position = data %>%
+      # Ensure correct clique position indices
+      group_by(text, clique_id) %>%
+      mutate(clique_position = cur_group_id()) %>%
+      ungroup()
+    
+    # Get the clique rows
+    q_i = data_q_position %>%
+      filter(text_clique_id == t_q_id)
+    # Get the genre
+    genre = q_i$genre %>% unique()
+    # Get the text id
+    t = q_i$text %>% unique()
+    # Get the clique id
+    q = q_i$clique_id %>% unique()
+    # Get the clique position
+    q_position = q_i$clique_position %>% unique()
+    # Get cliques q_j with j > i
+    q_js = data_q_position %>%
+      filter(text == t & clique_position > q_position)
+    
+    lapply(q_js$clique_position %>% unique(), function(j) {
+      q_j = q_js %>%
+        filter(clique_position == j)
   
-  # Iterate through each cell
-  for (j in 1:length(clique_ids)) {
-    # The matrix is symmetric
-    if (j > i) {
-      # Get the clique q_j to compare
-      q_j = data %>% filter(text_clique_id == clique_ids[j])
-      # Calculate the number or repeated vertices
-      r = intersect(q_i %>% .$stem, q_j %>% .$stem) %>% length()
-      # Calculate the number of cohesion edges
-      m_c = (q_i %>% filter(!stem %in% q_j$stem) %>% .$lemma) %in% 
-        (c(q_j %>% .$synonyms %>% str_split_1('\\|'),
-           q_j %>% .$hypernyms %>% str_split_1('\\|')) %>% 
-           unique()) %>%
-        sum()
-      # Get the number of vertices in q_j
-      n_j = q_j %>% nrow()
-      # Store the index values in the correspondent matricces' cells
-      pairwise_indices_v[i,j] = r/q_n
-      pairwise_indices_v[j,i] = r/q_n
-      pairwise_indices_e[i,j] = m_c/((q_n - r)*(n_j - r))
-      pairwise_indices_e[j,i] = m_c/((q_n - r)*(n_j - r))
-    }
-  }
-}
-
-# Calculate the mean pairwise cohesion
-mean_pairwise_cohesion = lapply(1:length(clique_ids), function(i) {
-  # Get the clique rows
-  q_i = data %>%
-    filter(text_clique_id == clique_ids[i])
-  # Get the genre
-  genre = q_i$genre %>% unique()
-  # Get the text id
-  t = q_i$text %>% unique()
-  # Get the clique id
-  q = q_i$clique_id %>% unique()
-  
-  tibble(
-    genre = genre,
-    text = t,
-    clique_id = q,
-    v = mean(pairwise_indices_v[i,], na.rm = T),
-    e = mean(pairwise_indices_e[i,], na.rm = T)
-  )
-}) %>%
+      tibble(
+        genre = genre,
+        text = t,
+        clique_id = q,
+        clique_j = q_j$clique_id %>% unique(),
+        # Calculate the number or repeated vertices
+        r = intersect(q_i %>% .$stem, q_j %>% .$stem) %>% length(),
+        # Calculate the number of cohesion edges
+        m_c = (q_i %>% filter(!stem %in% q_j$stem) %>% .$lemma) %in%
+          (c(q_j %>% .$synonyms %>% str_split('\\|') %>% unlist(),
+             q_j %>% .$hypernyms %>% str_split('\\|') %>% unlist()) %>%
+             unique()) %>%
+          sum(),
+        # Get the number of vertices in q_j
+        n_j = q_j %>% nrow(),
+        # Calculate vertex index
+        v = ifelse(
+          n_j == 0,
+          0,
+          ifelse(
+            q_n > 0 && r < q_n && r < n_j,
+            r/q_n,
+            1
+          )),
+        # Calculate edge index
+        e = ifelse(
+          q_n > 0 && n_j > 0 && r < q_n && r < q_j, 
+          m_c/((q_n - r)*(n_j - r)), 
+          0)
+      )
+    }) %>%
+    bind_rows()
+  }) %>%
   bind_rows()
+
+mean_pairwise_cohesion = mean_pairwise_cohesion_temp  %>%
+  bind_rows(mean_pairwise_cohesion_temp %>%
+              rename(clique_id = clique_j,
+                     clique_j = clique_id)) %>%
+  group_by(genre, text, clique_id) %>%
+  summarise(v = mean(v),
+            e = mean(e))
 
 # Join the results into a single table
 indices = global_backward_cohesion %>%
