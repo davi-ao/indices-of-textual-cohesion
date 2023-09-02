@@ -372,22 +372,22 @@ local_backward_cohesion = lapply(
       n_q_i = q_i %>% nrow(),
       # Get the number of vertices in q_{i-1}
       # Calcular o número de vértices in q_{i-1}
-      n_q_i_iprev = q_j %>% nrow(),
+      n_q_iprev = q_j %>% nrow(),
       # Calculate vertex index
       # Calcular o índice de vértice
       v = ifelse(
-        n_q_i_iprev == 0,
+        n_q_iprev == 0,
         0,
         ifelse(
-          n_q_i > 0 && r_i < n_q_i && r_i < n_q_i_iprev,
+          n_q_i > 0 && r_i < n_q_i && r_i < n_q_iprev,
           r_i/n_q_i,
           1
         )),
       # Calculate edge index
       # Calcular o índice de aresta
       e = ifelse(
-        n_q_i > 0 && n_q_i_iprev > 0 && r_i < n_q_i && r_i < n_q_i_iprev, 
-        m_i/((n_q_i - r_i)*(n_q_i_iprev - r_i)), 
+        n_q_i > 0 && n_q_iprev > 0 && r_i < n_q_i && r_i < n_q_iprev, 
+        m_i/((n_q_i - r_i)*(n_q_iprev - r_i)), 
         0)
     )
   }) %>%
@@ -472,7 +472,7 @@ mean_pairwise_cohesion_temp = lapply(
         # Calculate edge index
         # Calcular o índice de aresta
         e = ifelse(
-          n_q_i > 0 && n_q_j > 0 && r_i < n_q_i && r_i < q_j, 
+          n_q_i > 0 && n_q_j > 0 && r_i < n_q_i && r_i < n_q_j, 
           m_i/((n_q_i - r_i)*(n_q_j - r_i)), 
           0)
       )
