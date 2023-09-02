@@ -106,7 +106,7 @@ oanc_data = lapply(paste0(oanc_dir, list.files(oanc_dir)), function(f) {
 
 # Write OANC processed data to a CSV file
 # Salvar dados processados do OANC em um arquivo CSV
-# write_csv(oanc_data, 'data/oanc_data.csv')
+write_csv(oanc_data, 'data/oanc_data.csv')
 # ------------------------------------------------------------------------------
 
 # Get synonyms and hypernyms from Wordnet
@@ -171,7 +171,7 @@ synonyms_hypernyms = mapply(function(lemma, pos) {
 
 # Write lemmas with their synonyms and hypernyms to a CSV file
 # Salvar lemas com seus sinônimos e hiperônimos em um arquivo CSV
-# write_csv(synonyms_hypernyms, 'data/synonyms_hypernyms.csv')
+write_csv(synonyms_hypernyms, 'data/synonyms_hypernyms.csv')
 # ------------------------------------------------------------------------------
 
 # Generate pseudotexts
@@ -181,38 +181,38 @@ synonyms_hypernyms = mapply(function(lemma, pos) {
 # in line 184 instead of running lines 188-215
 # Para usar os mesmo pseudotextos reportados no estudo, descomente e rode o 
 # código na linha 184 ao invés de rodar as linhas 188-215
-# pseudotexts = read_csv('data/oanc_pseudotexts_study.csv')
+pseudotexts = read_csv('data/oanc_pseudotexts_study.csv')
 
 # Get the number of texts in the corpus
 # Identificar o número de textos no corpus
-corpus_size = oanc_data$text %>% unique() %>% length()
+# corpus_size = oanc_data$text %>% unique() %>% length()
 
 # Generate pseudotexts
 # Gerar pseudotextos
-pseudotexts = lapply(1:corpus_size, function(i) {
-  oanc_data %>%
-    # Attribute an ID number to each clique in the corpus
-    # Atribuir um número de identificação (ID) para cada clique no corpus
-    unite('text_clique_id', text:clique_id, remove = F) %>%
-    filter(text_clique_id %in% (
-      # Get a random sample of cliques, one per text
-      # Selecionar uma amostra aleatória de cliques, uma por texto
-      oanc_data %>%
-        group_by(text) %>%
-        sample_n(1) %>%
-        unite('text_clique_id', text:clique_id) %>%
-        .$text_clique_id)) %>%
-    group_by(text_clique_id) %>%
-    # Attribute an ID number to each pseudotexts and reset clique_id
-    # Atribuir um número de identificação (ID) para cada pseudotexto e 
-    # reconfigurar a coluna clique_id
-    mutate(genre = 'pseudotext',
-           text = paste0('pseudotext_', str_pad(i, 2, 'left', '0')),
-           clique_id = cur_group_id()) %>%
-    ungroup() %>%
-    select(-text_clique_id)
-}) %>%
-  bind_rows()
+# pseudotexts = lapply(1:corpus_size, function(i) {
+#   oanc_data %>%
+#     # Attribute an ID number to each clique in the corpus
+#     # Atribuir um número de identificação (ID) para cada clique no corpus
+#     unite('text_clique_id', text:clique_id, remove = F) %>%
+#     filter(text_clique_id %in% (
+#       # Get a random sample of cliques, one per text
+#       # Selecionar uma amostra aleatória de cliques, uma por texto
+#       oanc_data %>%
+#         group_by(text) %>%
+#         sample_n(1) %>%
+#         unite('text_clique_id', text:clique_id) %>%
+#         .$text_clique_id)) %>%
+#     group_by(text_clique_id) %>%
+#     # Attribute an ID number to each pseudotexts and reset clique_id
+#     # Atribuir um número de identificação (ID) para cada pseudotexto e 
+#     # reconfigurar a coluna clique_id
+#     mutate(genre = 'pseudotext',
+#            text = paste0('pseudotext_', str_pad(i, 2, 'left', '0')),
+#            clique_id = cur_group_id()) %>%
+#     ungroup() %>%
+#     select(-text_clique_id)
+# }) %>%
+#   bind_rows()
 
 # Write pseudotexts to a CSV file
 # Salvar pseudotextos em um arquivo CSV
@@ -239,7 +239,7 @@ data = oanc_data %>%
 
 # Write the combined data to a CSV file
 # Salvar os dados combinados em um arquivo CSV
-# write_csv(data, 'data/data.csv')
+write_csv(data, 'data/data.csv')
 #-------------------------------------------------------------------------------
 
 # Calculate the cohesion indices
@@ -519,7 +519,7 @@ indices = global_backward_cohesion %>%
 
 # Write the results to a CSV file
 # Salva os resultados em um arquivo CSV
-# write_csv(indices, 'networks/cohesion_indices.csv')
+write_csv(indices, 'networks/cohesion_indices.csv')
 # ------------------------------------------------------------------------------
 
 # Calculate the mean cohesion indices of texts and pseudotexts
@@ -546,7 +546,7 @@ mean_cohesion_summary = mean_cohesion_indices %>%
 
 # Write the results to a CSV file
 # Salva os resultados em um arquivo CSV
-# write_csv(mean_cohesion_indices, 'networks/mean_cohesion_indices.csv')
+write_csv(mean_cohesion_indices, 'networks/mean_cohesion_indices.csv')
 # ------------------------------------------------------------------------------
 
 # Calculate the empirical probabilities
