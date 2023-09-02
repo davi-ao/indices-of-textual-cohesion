@@ -8,8 +8,8 @@
 # Autores: Davi Alves Oliveira, Valter de Senna, e Hernane Borges de Barros 
 # Pereira 
 #
-# Last update: September 01, 2023
-# Última atualização: 01/09/2023
+# Last update: September 02, 2023
+# Última atualização: 02/09/2023
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
@@ -282,17 +282,22 @@ global_backward_cohesion = lapply(
       r_i = intersect(q_i %>% .$stem, G_i %>% .$stem) %>% length(),
       # Calculate the number of cohesion edges
       # Calcular o número de arestas coesivas
-      m_i = (q_i %>% filter(!stem %in% G_i$stem) %>% .$lemma) %in% 
-        (c(G_i %>% .$synonyms %>% str_split('\\|') %>% unlist(),
-           G_i %>% .$hypernyms %>% str_split('\\|') %>% unlist()) %>% 
-           unique()) %>%
-        sum(),
+      m_i = G_i %>%
+        filter(!.$stem %in% q_i$stem) %>%
+        bind_rows(G_i %>% filter(!.$stem %in% q_i$stem)) %>%
+        distinct(stem, .keep_all = T) %>%
+        separate_rows(hypernyms, sep = '\\|') %>%
+        filter(synonyms %in% 
+                 (q_i %>% filter(!stem %in% G_i$stem) %>% .$lemma) |
+                 hypernyms %in% 
+                 (q_i %>% filter(!stem %in% G_i$stem) %>% .$lemma)) %>%
+        nrow(),
       # Get the number of vertices in the clique
       # Calcular o número de vértices na clique
       n_q_i = q_i %>% nrow(),
       # Get the number of vertices in G_i
       # Calcular o número de vértices em G_i
-      n_iprev = G_i %>% nrow(),
+      n_iprev = G_i %>% .$stem %>% unique() %>% length(),
       # Calculate vertex index
       # Calcular o índice de vértice
       v = ifelse(
@@ -362,11 +367,16 @@ local_backward_cohesion = lapply(
       r_i = intersect(q_i %>% .$stem, q_j %>% .$stem) %>% length(),
       # Calculate the number of cohesion edges
       # Calcular o número de aretas coesivas
-      m_i = (q_i %>% filter(!stem %in% q_j$stem) %>% .$lemma) %in% 
-        (c(q_j %>% .$synonyms %>% str_split('\\|') %>% unlist(),
-           q_j %>% .$hypernyms %>% str_split('\\|') %>% unlist()) %>% 
-           unique()) %>%
-        sum(),
+      m_i = q_j %>%
+        filter(!.$stem %in% q_i$stem) %>%
+        bind_rows(q_j %>% filter(!.$stem %in% q_i$stem)) %>%
+        distinct(stem, .keep_all = T) %>%
+        separate_rows(hypernyms, sep = '\\|') %>%
+        filter(synonyms %in% 
+                 (q_i %>% filter(!stem %in% q_j$stem) %>% .$lemma) |
+                 hypernyms %in% 
+                 (q_i %>% filter(!stem %in% q_j$stem) %>% .$lemma)) %>%
+        nrow(),
       # Get the number of vertices in the clique
       # Calcular o número de vértices na clique
       n_q_i = q_i %>% nrow(),
@@ -450,11 +460,16 @@ mean_pairwise_cohesion_temp = lapply(
         r_i = intersect(q_i %>% .$stem, q_j %>% .$stem) %>% length(),
         # Calculate the number of cohesion edges
         # Calcular o número de arestas coesivas
-        m_i = (q_i %>% filter(!stem %in% q_j$stem) %>% .$lemma) %in%
-          (c(q_j %>% .$synonyms %>% str_split('\\|') %>% unlist(),
-             q_j %>% .$hypernyms %>% str_split('\\|') %>% unlist()) %>%
-             unique()) %>%
-          sum(),
+        m_i = q_j %>%
+          filter(!.$stem %in% q_i$stem) %>%
+          bind_rows(q_j %>% filter(!.$stem %in% q_i$stem)) %>%
+          distinct(stem, .keep_all = T) %>%
+          separate_rows(hypernyms, sep = '\\|') %>%
+          filter(synonyms %in% 
+                   (q_i %>% filter(!stem %in% q_j$stem) %>% .$lemma) |
+                   hypernyms %in% 
+                   (q_i %>% filter(!stem %in% q_j$stem) %>% .$lemma)) %>%
+          nrow(),
         n_q_i = n_q_i,
         # Get the number of vertices in q_j
         # Calcular o número de vértices em q_j
