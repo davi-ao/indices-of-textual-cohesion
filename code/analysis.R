@@ -106,7 +106,7 @@ oanc_data = lapply(paste0(oanc_dir, list.files(oanc_dir)), function(f) {
 
 # Write OANC processed data to a CSV file
 # Salvar dados processados do OANC em um arquivo CSV
-write_csv(oanc_data, 'data/oanc_data.csv')
+# write_csv(oanc_data, 'data/oanc_processed.csv')
 # ------------------------------------------------------------------------------
 
 # Get synonyms and hypernyms from Wordnet
@@ -171,7 +171,7 @@ synonyms_hypernyms = mapply(function(lemma, pos) {
 
 # Write lemmas with their synonyms and hypernyms to a CSV file
 # Salvar lemas com seus sinônimos e hiperônimos em um arquivo CSV
-write_csv(synonyms_hypernyms, 'data/synonyms_hypernyms.csv')
+# write_csv(synonyms_hypernyms, 'data/wordnet_synonyms_hypernyms.csv')
 # ------------------------------------------------------------------------------
 
 # Generate pseudotexts
@@ -239,7 +239,7 @@ data = oanc_data %>%
 
 # Write the combined data to a CSV file
 # Salvar os dados combinados em um arquivo CSV
-write_csv(data, 'data/data.csv')
+# write_csv(data, 'data/data.csv')
 #-------------------------------------------------------------------------------
 
 # Calculate the cohesion indices
@@ -534,7 +534,7 @@ indices = global_backward_cohesion %>%
 
 # Write the results to a CSV file
 # Salva os resultados em um arquivo CSV
-write_csv(indices, 'networks/cohesion_indices.csv')
+# write_csv(indices, 'networks/cohesion_indices.csv')
 # ------------------------------------------------------------------------------
 
 # Calculate the mean cohesion indices of texts and pseudotexts
@@ -561,18 +561,27 @@ mean_cohesion_summary = mean_cohesion_indices %>%
 
 # Write the results to a CSV file
 # Salva os resultados em um arquivo CSV
-write_csv(mean_cohesion_indices, 'networks/mean_cohesion_indices.csv')
+# write_csv(mean_cohesion_indices, 'networks/mean_cohesion_indices.csv')
 # ------------------------------------------------------------------------------
 
 # Calculate the empirical probabilities
 # Calcular as probabilidades empíricas
 # ------------------------------------------------------------------------------
-
+# Empirical probabilities of the vertex cohesion indices
+empirical_probabilities = indices %>%
+  mutate(corpus = ifelse(genre == 'pseudotext', 'pseudotexts', 'texts')) %>%
+  slice(rep(1:n(), each = 9)) %>%
+  mutate(cutoff = rep(seq(.1, .9, .1), n()/9)) %>%
+  group_by(corpus, index, cutoff) %>%
+  summarise(p = mean(v >= cutoff)) %>%
+  pivot_wider(names_from = corpus, values_from = p) %>%
+  mutate(difference = texts - pseudotexts)
 # ------------------------------------------------------------------------------
 
 # Recalculate the indices with sample of sentences
 # Recalcular os ínices com amostras de períodos
 # ------------------------------------------------------------------------------
+
 
 # ------------------------------------------------------------------------------
 
