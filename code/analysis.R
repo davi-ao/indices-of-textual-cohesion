@@ -193,14 +193,14 @@ pseudotexts = read_csv('data/oanc_pseudotexts_study.csv')
 #   oanc_data %>%
 #     # Attribute an ID number to each clique in the corpus
 #     # Atribuir um número de identificação (ID) para cada clique no corpus
-#     unite('text_clique_id', text:clique_id, remove = F) %>%
+#     unite('text_clique_id', c(text, clique_id), remove = F) %>%
 #     filter(text_clique_id %in% (
 #       # Get a random sample of cliques, one per text
 #       # Selecionar uma amostra aleatória de cliques, uma por texto
 #       oanc_data %>%
 #         group_by(text) %>%
 #         sample_n(1) %>%
-#         unite('text_clique_id', text:clique_id) %>%
+#         unite('text_clique_id', c(text, clique_id)) %>%
 #         .$text_clique_id)) %>%
 #     group_by(text_clique_id) %>%
 #     # Attribute an ID number to each pseudotexts and reset clique_id
@@ -235,7 +235,7 @@ data = oanc_data %>%
   mutate(synonyms = synonyms %>% str_remove_all('\\(a\\)|\\(p\\)')) %>%
   # Attribute an ID number to each clique in the data
   # Atribuir um número de identificação (ID) para cada clique nos dados
-  unite('text_clique_id', text:clique_id, remove = F)
+  unite('text_clique_id', c(text, clique_id), remove = F)
 
 # Write the combined data to a CSV file
 # Salvar os dados combinados em um arquivo CSV
@@ -299,7 +299,7 @@ global_backward_cohesion = lapply(
       # Calcular o número de vértices em G_i
       n_iprev = G_i %>% .$stem %>% unique() %>% length(),
       # Calculate vertex index
-      # Calcular o índice de vértice
+      # Calcular o índice de vértices
       v = ifelse(
         n_iprev == 0,
         0,
@@ -309,7 +309,7 @@ global_backward_cohesion = lapply(
           1
         )),
       # Calculate edge index
-      # Calcular o índice de aresta
+      # Calcular o índice de arestas
       e = ifelse(
         n_q_i > 0 && n_iprev > 0 && r_i < n_q_i && r_i < n_iprev, 
         m_i/((n_q_i - r_i)*(n_iprev - r_i)), 
@@ -384,7 +384,7 @@ local_backward_cohesion = lapply(
       # Calcular o número de vértices in q_{i-1}
       n_q_iprev = q_j %>% nrow(),
       # Calculate vertex index
-      # Calcular o índice de vértice
+      # Calcular o índice de vértices
       v = ifelse(
         n_q_iprev == 0,
         0,
@@ -394,7 +394,7 @@ local_backward_cohesion = lapply(
           1
         )),
       # Calculate edge index
-      # Calcular o índice de aresta
+      # Calcular o índice de arestas
       e = ifelse(
         n_q_i > 0 && n_q_iprev > 0 && r_i < n_q_i && r_i < n_q_iprev, 
         m_i/((n_q_i - r_i)*(n_q_iprev - r_i)), 
@@ -475,7 +475,7 @@ mean_pairwise_cohesion_temp = lapply(
         # Calcular o número de vértices em q_j
         n_q_j = q_j %>% nrow(),
         # Calculate vertex index
-        # Calcular o índice de vértice
+        # Calcular o índice de vértices
         v = ifelse(
           n_q_j == 0,
           0,
@@ -485,7 +485,7 @@ mean_pairwise_cohesion_temp = lapply(
             1
           )),
         # Calculate edge index
-        # Calcular o índice de aresta
+        # Calcular o índice de arestas
         e = ifelse(
           n_q_i > 0 && n_q_j > 0 && r_i < n_q_i && r_i < n_q_j, 
           m_i/((n_q_i - r_i)*(n_q_j - r_i)), 
@@ -568,21 +568,172 @@ mean_cohesion_summary = mean_cohesion_indices %>%
 # Calcular as probabilidades empíricas
 # ------------------------------------------------------------------------------
 # Empirical probabilities of the vertex cohesion indices
+# Probabilidades empíricas dos índices de coesão de vértices
 empirical_probabilities = indices %>%
   mutate(corpus = ifelse(genre == 'pseudotext', 'pseudotexts', 'texts')) %>%
   slice(rep(1:n(), each = 9)) %>%
   mutate(cutoff = rep(seq(.1, .9, .1), n()/9)) %>%
   group_by(corpus, index, cutoff) %>%
+  # Calculate the empirical probabilities
+  # Calcular as probabilidades empíricas
   summarise(p = mean(v >= cutoff)) %>%
   pivot_wider(names_from = corpus, values_from = p) %>%
+  # Calculate the differences between the probabilites from texts and pseudotexts
+  # Calcular as diferenças entre as probabilidades de textos e pseudotextos
   mutate(difference = texts - pseudotexts)
 # ------------------------------------------------------------------------------
 
 # Recalculate the indices with sample of sentences
-# Recalcular os ínices com amostras de períodos
+# Recalcular os índices com amostras de períodos
 # ------------------------------------------------------------------------------
+# Get samples of the global and local indices calculated from the first 10 to 60 
+# sentences of each text and pseudotext
+# Selecionar amostras dos índices globais e locais calculados dos primeiros 10 a
+# 60 períodos de cada texto e pseudotexto
+indices_samples_temp = lapply(seq(10, 60, 10), function(s) {
+  indices %>%
+    group_by(text) %>%
+    slice_head(n = s) %>%
+    mutate(n_sentences = s)
+}) %>%
+  bind_rows()
 
+# Recalculate the mean pairwise indices for the first 10 to 60 sentences of each
+# text and pseudotext
+# Recalcular os índices de coesão pareada média para os primeiros 10 a 60 períodos
+# de cada texto e pseudotexto
+data_samples = lapply(seq(10, 60, 10), function(s) {
+  data %>%
+    filter(clique_id <= s) %>%
+    mutate(n_sentences = s)
+}) %>%
+  bind_rows() %>%
+  group_by(n_sentences, text) %>%
+  # Identify and remove texts with less sentences than the size of the samples
+  # Identificar e remover textos com menos períodos que os tamanhos das amostras
+  mutate(n_cliques = clique_id %>% unique() %>% length()) %>%
+  filter(n_cliques == n_sentences) %>%
+  unite('s_text_clique_id', c(n_sentences, text_clique_id), remove = F)
 
+# Recalculate the mean pairwise cohesion indices
+# Recalcular os índices de coesão pareada média
+samples_mean_pairwise_cohesion_temp = lapply(
+  # Iterate through each clique in the data
+  # Iterar cada clique nos dados
+  (data_samples %>%
+     .$s_text_clique_id %>% 
+     unique()),
+  function(s_t_q_id) {
+    data_q_position = data_samples %>%
+      # Ensure correct clique position ID
+      # Garantir um número de identificação (ID) correto para a posição das
+      # cliques
+      group_by(text, clique_id, n_sentences) %>%
+      mutate(clique_position = cur_group_id()) %>%
+      ungroup()
+    
+    # Get the clique rows
+    # Selecionar as linhas da clique
+    q_i = data_q_position %>%
+      filter(s_text_clique_id == s_t_q_id)
+    # Get the sample size
+    # Identificar tamanho da amostra
+    s = q_i$n_sentences %>% unique()
+    # Get the genre
+    # Identificar o gênero textual
+    genre = q_i$genre %>% unique()
+    # Get the text ID
+    # Identificar o ID do texto
+    t = q_i$text %>% unique()
+    # Get the clique ID
+    # Identificar o ID da clique
+    q = q_i$clique_id %>% unique()
+    # Get the clique position
+    # Identificar a posição da clique
+    q_position = q_i$clique_position %>% unique()
+    # Get cliques q_j with j > i
+    # Selecionar as cliques q_j com j > i
+    q_js = data_q_position %>%
+      filter(text == t & n_sentences == s & clique_position > q_position)
+    # Get the number of vertices in the clique
+    # Calcular o número de vértices na clique
+    n_q_i = q_i %>% nrow()
+    
+    # Calculate the pairwise indices
+    # Calcular os índices pareados
+    lapply(q_js$clique_position %>% unique(), function(j) {
+      q_j = q_js %>%
+        filter(clique_position == j)
+      
+      tibble(
+        genre = genre,
+        text = t,
+        clique_id = q,
+        clique_j = q_j$clique_id %>% unique(),
+        # Calculate the number or repeated vertices
+        # Calcular o número de vértices repetidos
+        r_i = intersect(q_i %>% .$stem, q_j %>% .$stem) %>% length(),
+        # Calculate the number of cohesion edges
+        # Calcular o número de arestas coesivas
+        m_i = q_j %>%
+          filter(!.$stem %in% q_i$stem) %>%
+          bind_rows(q_j %>% filter(!.$stem %in% q_i$stem)) %>%
+          distinct(stem, .keep_all = T) %>%
+          separate_rows(hypernyms, sep = '\\|') %>%
+          filter(synonyms %in% 
+                   (q_i %>% filter(!stem %in% q_j$stem) %>% .$lemma) |
+                   hypernyms %in% 
+                   (q_i %>% filter(!stem %in% q_j$stem) %>% .$lemma)) %>%
+          nrow(),
+        n_q_i = n_q_i,
+        # Get the number of vertices in q_j
+        # Calcular o número de vértices em q_j
+        n_q_j = q_j %>% nrow(),
+        # Calculate vertex index
+        # Calcular o índice de vértices
+        v = ifelse(
+          n_q_j == 0,
+          0,
+          ifelse(
+            n_q_i > 0 && r_i < n_q_i && r_i < n_q_j,
+            r_i/n_q_i,
+            1
+          )),
+        # Calculate edge index
+        # Calcular o índice de arestas
+        e = ifelse(
+          n_q_i > 0 && n_q_j > 0 && r_i < n_q_i && r_i < n_q_j, 
+          m_i/((n_q_i - r_i)*(n_q_j - r_i)), 
+          0),
+        n_sentences = s
+      )
+    }) %>%
+      bind_rows()
+  }) %>%
+  bind_rows()
+
+# Calculate the mean pairwise cohesion indices
+# Calcular os índices de coesão pareada média
+samples_mean_pairwise_cohesion = samples_mean_pairwise_cohesion_temp  %>%
+  # Add the necessary repeated pairs
+  # Adicionar os pares repetidos necessários
+  bind_rows(samples_mean_pairwise_cohesion_temp %>%
+              rename(clique_id = clique_j,
+                     clique_j = clique_id)) %>%
+  group_by(genre, text, clique_id, n_sentences) %>%
+  # Calculate the mean for each clique
+  # Calcula a média para cada clique
+  summarise(v = mean(v),
+            e = mean(e))
+
+# Combine the samples indices
+# Combinar os índices das amostras
+indices_samples = indices_samples_temp %>%
+  bind_rows(samples_mean_pairwise_cohesion)
+
+# Write the results to a CSV file
+# Salva os resultados em um arquivo CSV
+write_csv(indices_samples, 'networks/cohesion_indices_samples.csv')
 # ------------------------------------------------------------------------------
 
 # Plot figures
