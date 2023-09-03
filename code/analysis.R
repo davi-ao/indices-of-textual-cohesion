@@ -8,8 +8,8 @@
 # Autores: Davi Alves Oliveira, Valter de Senna, e Hernane Borges de Barros 
 # Pereira 
 #
-# Last update: September 02, 2023
-# Última atualização: 02/09/2023
+# Last update: September 03, 2023
+# Última atualização: 03/09/2023
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
@@ -534,7 +534,7 @@ indices = global_backward_cohesion %>%
 
 # Write the results to a CSV file
 # Salva os resultados em um arquivo CSV
-# write_csv(indices, 'networks/cohesion_indices.csv')
+write_csv(indices, 'results/cohesion_indices.csv')
 # ------------------------------------------------------------------------------
 
 # Calculate the mean cohesion indices of texts and pseudotexts
@@ -561,7 +561,8 @@ mean_cohesion_summary = mean_cohesion_indices %>%
 
 # Write the results to a CSV file
 # Salva os resultados em um arquivo CSV
-# write_csv(mean_cohesion_indices, 'networks/mean_cohesion_indices.csv')
+write_csv(mean_cohesion_indices, 'results/mean_cohesion_indices.csv')
+write_csv(mean_cohesion_summary, 'results/mean_cohesion_indices_summary.csv')
 # ------------------------------------------------------------------------------
 
 # Calculate the empirical probabilities
@@ -581,6 +582,11 @@ empirical_probabilities = indices %>%
   # Calculate the differences between the probabilites from texts and pseudotexts
   # Calcular as diferenças entre as probabilidades de textos e pseudotextos
   mutate(difference = texts - pseudotexts)
+
+# Write the results to a CSV file
+# Salva os resultados em um arquivo CSV
+write_csv(empirical_probabilities, 
+          'results/indices_empirical_probabilities.csv')
 # ------------------------------------------------------------------------------
 
 # Recalculate the indices with sample of sentences
@@ -733,7 +739,7 @@ indices_samples = indices_samples_temp %>%
 
 # Write the results to a CSV file
 # Salva os resultados em um arquivo CSV
-write_csv(indices_samples, 'networks/cohesion_indices_samples.csv')
+write_csv(indices_samples, 'results/cohesion_indices_samples.csv')
 # ------------------------------------------------------------------------------
 
 # Plot figures
