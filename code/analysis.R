@@ -8,8 +8,8 @@
 # Autores: Davi Alves Oliveira, Valter de Senna, e Hernane Borges de Barros 
 # Pereira 
 #
-# Last update: September 03, 2023
-# Última atualização: 03/09/2023
+# Last update: September 04, 2023
+# Última atualização: 04/09/2023
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
@@ -18,16 +18,26 @@
 # install.packages('tidyverse')
 # install.packages('SnowballC')
 # install.packages('wordnet')
+# install.packages('jtools')
+# install.packages('ggpattern')
+# install.packages('gridExtra')
 
 # Load required packages
 # Carregar pacotes necessários
 library(tidyverse)
 library(SnowballC)
 library(wordnet)
+library(jtools)
+library(ggpattern)
+library(gridExtra)
 
 # Set Wordnet English dictionary
 # Configurar o dicionário de inglês do Wordnet
 setDict('data/wn3.1.dict/dict/')
+
+# Set APA theme for plotting
+# Configurar o tema APA para figuras
+theme_set(theme_apa())
 
 # Process OANC XML files (selected from https://anc.org/)
 # Processar arquivos XML do OANC (selecionados de https://anc.org/)
@@ -177,18 +187,18 @@ write_csv(synonyms_hypernyms, 'data/wordnet_synonyms_hypernyms.csv')
 # Generate pseudotexts
 # Gerar pseudotextos
 # ------------------------------------------------------------------------------
-# To use the same pseudotexts reported in the study, uncomment and run the code 
-# in line 184 instead of running lines 188-215
-# Para usar os mesmo pseudotextos reportados no estudo, descomente e rode o 
-# código na linha 184 ao invés de rodar as linhas 188-215
+# To generate new pseudotexts instead of usings the ones reported in the study, 
+# comment line 194 and uncomment and run the code in lines 196-225 
+# Para gerar novos pseudotextos ao invés de usar os mesmos reportados no estudo,
+# comente a linha 194 e descomente e rode o código nas linhas 196-225
 pseudotexts = read_csv('data/oanc_pseudotexts_study.csv')
 
-# Get the number of texts in the corpus
-# Identificar o número de textos no corpus
+# # Get the number of texts in the corpus
+# # Identificar o número de textos no corpus
 # corpus_size = oanc_data$text %>% unique() %>% length()
-
-# Generate pseudotexts
-# Gerar pseudotextos
+# 
+# # Generate pseudotexts
+# # Gerar pseudotextos
 # pseudotexts = lapply(1:corpus_size, function(i) {
 #   oanc_data %>%
 #     # Attribute an ID number to each clique in the corpus
@@ -204,7 +214,7 @@ pseudotexts = read_csv('data/oanc_pseudotexts_study.csv')
 #         .$text_clique_id)) %>%
 #     group_by(text_clique_id) %>%
 #     # Attribute an ID number to each pseudotexts and reset clique_id
-#     # Atribuir um número de identificação (ID) para cada pseudotexto e 
+#     # Atribuir um número de identificação (ID) para cada pseudotexto e
 #     # reconfigurar a coluna clique_id
 #     mutate(genre = 'pseudotext',
 #            text = paste0('pseudotext_', str_pad(i, 2, 'left', '0')),
@@ -598,7 +608,8 @@ write_csv(empirical_probabilities,
 # 60 períodos de cada texto e pseudotexto
 indices_samples_temp = lapply(seq(10, 60, 10), function(s) {
   indices %>%
-    group_by(text) %>%
+    filter(index %in% c('global', 'local')) %>%
+    group_by(text, index) %>%
     slice_head(n = s) %>%
     mutate(n_sentences = s)
 }) %>%
@@ -735,7 +746,8 @@ samples_mean_pairwise_cohesion = samples_mean_pairwise_cohesion_temp  %>%
 # Combine the samples indices
 # Combinar os índices das amostras
 indices_samples = indices_samples_temp %>%
-  bind_rows(samples_mean_pairwise_cohesion)
+  bind_rows(samples_mean_pairwise_cohesion %>%
+              mutate(index = 'pairwise'))
 
 # Write the results to a CSV file
 # Salva os resultados em um arquivo CSV
@@ -745,3 +757,304 @@ write_csv(indices_samples, 'results/cohesion_indices_samples.csv')
 # Plot figures
 # Gerar figuras
 # ------------------------------------------------------------------------------
+# Prepare data for plotting
+# Preparar dados para geração de gráficos
+indices_plot = indices %>%
+  pivot_longer(c(v, e), names_to = 'index_type', values_to = 'value') %>%
+  mutate(index_type = index_type %>%
+           as_factor() %>%
+           recode('e' = 'Edge Cohesion',
+                  'v' = 'Vertex Cohesion'),
+         corpus = ifelse(genre == 'pseudotext', 'Pseudotexts', 'Texts') %>%
+           factor(levels = c('Texts', 'Pseudotexts')),
+         genre = genre %>%
+           as_factor() %>%
+           recode('berlitz' = 'Travel guides',
+                  'biomed' = 'Biomedical research articles',
+                  'icic' = 'Letters',
+                  'media' = 'Government media',
+                  'plos' = 'Scientific and medical articles',
+                  'pseudo' = 'Pseudotexts',
+                  'slate' = 'Magazine articles'))
+
+indices_samples_plot = indices_samples %>%
+  pivot_longer(c(v, e), names_to = 'index_type', values_to = 'value') %>%
+  mutate(index_type = index_type %>%
+           as_factor() %>%
+           recode('e' = 'Edge Cohesion',
+                  'v' = 'Vertex Cohesion'),
+         corpus = ifelse(genre == 'pseudotext', 'Pseudotexts', 'Texts') %>%
+           factor(levels = c('Texts', 'Pseudotexts')),
+         genre = genre %>%
+           as_factor() %>%
+           recode('berlitz' = 'Travel guides',
+                  'biomed' = 'Biomedical research articles',
+                  'icic' = 'Letters',
+                  'media' = 'Government media',
+                  'plos' = 'Scientific and medical articles',
+                  'pseudo' = 'Pseudotexts',
+                  'slate' = 'Magazine articles'))
+
+# Figure 11
+# Figura 11
+figure11 = indices_plot %>%
+  mutate(index = index %>%
+           as_factor() %>%
+           recode('global' = 'Text Global Backward Cohesion',
+                  'local' = 'Text Local Backward Cohesion',
+                  'pairwise' = 'Text Mean Pairwise Cohesion')) %>%
+  group_by(corpus, genre, text, index_type, index) %>%
+  summarize(`Mean indices` = mean(value)) %>%
+  ggplot(aes(genre, `Mean indices`, fill = genre, group = genre)) +
+  geom_boxplot() +
+  stat_summary(fun = mean,
+               geom = 'point',
+               shape = 22,
+               size = 2,
+               color = 'black',
+               fill = 'white',
+               position = position_dodge(width = 1)) +
+  facet_wrap(index_type ~ index, scales = 'free') +
+  theme(legend.position = 'bottom', legend.direction = 'horizontal') +
+  scale_fill_brewer(palette = 'Dark2') +
+  xlab('') +
+  theme(axis.text.x = element_blank())
+
+ggsave(filename = 'results/figures/Figure11.svg',
+       plot = figure11,
+       device = 'svg',
+       width = 24.7,
+       height = 16,
+       units = 'cm',
+       dpi = 300)
+
+# Figure 12
+# Figura 12
+figure12 = read_delim('data/taaco_results.csv', 
+                      delim = ';', 
+                      locale = locale(decimal_mark = ',')) %>%
+  mutate(corpus = corpus %>%
+           as_factor() %>%
+           recode('text' = 'Texts',
+                  'pseudo' = 'Pseudotexts'),
+         genre = genre %>%
+           as_factor() %>%
+           recode('berlitz' = 'Travel guides',
+                  'biomed' = 'Biomedical research articles',
+                  'icic' = 'Letters',
+                  'media' = 'Government media',
+                  'plos' = 'Scientific and medical articles',
+                  'pseudo' = 'Pseudotexts',
+                  'slate' = 'Magazine articles')) %>%
+  pivot_longer(-c(corpus, genre, Filename), names_to = 'index', values_to = 'value') %>%
+  mutate(index = index %>%
+           recode('adjacent_overlap_cw_sent' = str_wrap('Adjacent sentence overlap content lemmas', 32),
+                  'adjacent_overlap_cw_sent_div_seg' = str_wrap('Adjacent sentence overlap content lemmas (sentence normed)', 32),
+                  'adjacent_overlap_binary_cw_sent' = str_wrap('Binary adjacent sentence overlap content lemmas', 32),
+                  'syn_overlap_sent_noun' = str_wrap('Synonym overlap (sentence, noun)', 32),
+                  'syn_overlap_sent_verb' = str_wrap('Synonym overlap (sentence, verb)', 32))) %>%
+  ggplot(aes(genre, value, fill = genre)) +
+  geom_boxplot() +
+  stat_summary(fun.y = mean, 
+               geom = 'point',
+               shape = 22,
+               size = 2,
+               color = 'black',
+               fill = 'white',
+               position = position_dodge(width = 1)) +
+  facet_wrap(. ~ index, scales = 'free') +
+  theme(legend.position = 'bottom', legend.direction = 'horizontal') +
+  scale_fill_brewer(palette = 'Dark2') +
+  xlab('') +
+  theme(axis.text.x = element_blank()) +
+  ylab('Index value')
+
+ggsave(filename = 'results/figures/Figure12.svg',
+       plot = figure12,
+       device = 'svg',
+       width = 24.7,
+       height = 16,
+       units = 'cm',
+       dpi = 300)
+
+# Figure 13
+# Figura 13
+figure13 = indices_plot %>%
+  mutate(index = index %>%
+           as_factor() %>%
+           recode('global' = 'θ - Global Backward Cohesion',
+                  'local' = 'λ - Local Backward Cohesion',
+                  'pairwise' = 'ρ - Mean Pairwise Cohesion')) %>%
+  ggplot(aes(value, 
+             fill = corpus, 
+             group = corpus, 
+             pattern = corpus)) +
+  facet_wrap(index_type ~ index, scales = 'free') +
+  geom_density_pattern(alpha = .5,
+                       pattern_fill = 'black',
+                       pattern_color = 'black') +
+  theme(legend.position = 'bottom', legend.direction = 'horizontal') +
+  scale_fill_brewer(palette = 'Dark2') +
+  xlab('Value') +
+  ylab('Density')
+
+ggsave(filename = 'results/figures/Figure13.svg',
+       plot = figure13,
+       device = 'svg',
+       width = 24.7,
+       height = 16,
+       units = 'cm',
+       dpi = 300)
+
+# Figure 14
+# Figura 14
+figure14 = grid.arrange(
+  indices_samples_plot %>%
+    filter(index_type == 'Vertex Cohesion' & index == 'global') %>%
+    ggplot(aes(value, 
+               fill = corpus, 
+               group = corpus, 
+               pattern = corpus)) +
+    facet_wrap(. ~ n_sentences, ncol = 6) +
+    geom_density_pattern(alpha = .5,
+                         pattern_fill = 'black',
+                         pattern_color = 'black') +
+    theme(legend.position = 'bottom', 
+          legend.direction = 'horizontal',
+          legend.key.size = unit(.5, 'cm'),
+          plot.title = element_text(size = 12, hjust = .5, face = 'plain'),
+          axis.text.x = element_text(size = 7)) +
+    scale_fill_brewer(palette = 'Dark2') +
+    ggtitle('Global Backward Vertex Cohesion\nNumber of sentences') +
+    xlab('Value') +
+    ylab('Density'),
+  indices_samples_plot %>%
+    filter(index_type == 'Edge Cohesion' & index == 'global') %>%
+    ggplot(aes(value, 
+               fill = corpus, 
+               group = corpus, 
+               pattern = corpus)) +
+    facet_wrap(. ~ n_sentences, ncol = 6) +
+    geom_density_pattern(alpha = .5,
+                         pattern_fill = 'black',
+                         pattern_color = 'black') +
+    theme(legend.position = 'bottom', 
+          legend.direction = 'horizontal',
+          legend.key.size = unit(.5, 'cm'),
+          plot.title = element_text(size = 12, hjust = .5, face = 'plain'),
+          axis.text.x = element_text(size = 7)) +
+    scale_fill_brewer(palette = 'Dark2') +
+    ggtitle('Global Backward Edge Cohesion\nNumber of sentences') +
+    xlab('Value') +
+    ylab('Density')
+)
+
+ggsave(filename = 'results/figures/Figure14.svg',
+       plot = figure14,
+       device = 'svg',
+       width = 24.7,
+       height = 16,
+       units = 'cm',
+       dpi = 300)
+
+# Figure 15
+# Figura 15
+figure15 = grid.arrange(
+  indices_samples_plot %>%
+    filter(index_type == 'Vertex Cohesion' & index == 'local') %>%
+    ggplot(aes(value, 
+               fill = corpus, 
+               group = corpus, 
+               pattern = corpus)) +
+    facet_wrap(. ~ n_sentences, ncol = 6) +
+    geom_density_pattern(alpha = .5,
+                         pattern_fill = 'black',
+                         pattern_color = 'black') +
+    theme(legend.position = 'bottom', 
+          legend.direction = 'horizontal',
+          legend.key.size = unit(.5, 'cm'),
+          plot.title = element_text(size = 12, hjust = .5, face = 'plain'),
+          axis.text.x = element_text(size = 7)) +
+    scale_fill_brewer(palette = 'Dark2') +
+    ggtitle('Local Backward Vertex Cohesion\nNumber of sentences') +
+    xlab('Value') +
+    ylab('Density'),
+  indices_samples_plot %>%
+    filter(index_type == 'Edge Cohesion' & index == 'local') %>%
+    ggplot(aes(value, 
+               fill = corpus, 
+               group = corpus, 
+               pattern = corpus)) +
+    facet_wrap(. ~ n_sentences, ncol = 6) +
+    geom_density_pattern(alpha = .5,
+                         pattern_fill = 'black',
+                         pattern_color = 'black') +
+    theme(legend.position = 'bottom', 
+          legend.direction = 'horizontal',
+          legend.key.size = unit(.5, 'cm'),
+          plot.title = element_text(size = 12, hjust = .5, face = 'plain'),
+          axis.text.x = element_text(size = 7)) +
+    scale_fill_brewer(palette = 'Dark2') +
+    ggtitle('Local Backward Edge Cohesion\nNumber of sentences') +
+    xlab('Value') +
+    ylab('Density')
+)
+
+ggsave(filename = 'results/figures/Figure15.svg',
+       plot = figure15,
+       device = 'svg',
+       width = 24.7,
+       height = 16,
+       units = 'cm',
+       dpi = 300)
+
+# Figure 16
+# Figura 16
+figure16 = grid.arrange(
+  indices_samples_plot %>%
+    filter(index_type == 'Vertex Cohesion' & index == 'pairwise') %>%
+    ggplot(aes(value, 
+               fill = corpus, 
+               group = corpus, 
+               pattern = corpus)) +
+    facet_wrap(. ~ n_sentences, ncol = 6) +
+    geom_density_pattern(alpha = .5,
+                         pattern_fill = 'black',
+                         pattern_color = 'black') +
+    theme(legend.position = 'bottom', 
+          legend.direction = 'horizontal',
+          legend.key.size = unit(.5, 'cm'),
+          plot.title = element_text(size = 12, hjust = .5, face = 'plain'),
+          axis.text.x = element_text(size = 7)) +
+    scale_fill_brewer(palette = 'Dark2') +
+    ggtitle('Mean Pairwise Vertex Cohesion\nNumber of sentences') +
+    xlab('Value') +
+    ylab('Density'),
+  indices_samples_plot %>%
+    filter(index_type == 'Edge Cohesion' & index == 'pairwise') %>%
+    ggplot(aes(value, 
+               fill = corpus, 
+               group = corpus, 
+               pattern = corpus)) +
+    facet_wrap(. ~ n_sentences, ncol = 6) +
+    geom_density_pattern(alpha = .5,
+                         pattern_fill = 'black',
+                         pattern_color = 'black') +
+    theme(legend.position = 'bottom', 
+          legend.direction = 'horizontal',
+          legend.key.size = unit(.5, 'cm'),
+          plot.title = element_text(size = 12, hjust = .5, face = 'plain'),
+          axis.text.x = element_text(size = 7)) +
+    scale_fill_brewer(palette = 'Dark2') +
+    ggtitle('Mean Pairwise Edge Cohesion\nNumber of sentences') +
+    xlab('Value') +
+    ylab('Density')
+)
+
+ggsave(filename = 'results/figures/Figure16.svg',
+       plot = figure16,
+       device = 'svg',
+       width = 24.7,
+       height = 16,
+       units = 'cm',
+       dpi = 300)
