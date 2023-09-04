@@ -26,14 +26,9 @@
 # Carregar pacotes necessários
 library(tidyverse)
 library(SnowballC)
-library(wordnet)
 library(jtools)
 library(ggpattern)
 library(gridExtra)
-
-# Set Wordnet English dictionary
-# Configurar o dicionário de inglês do Wordnet
-setDict('data/wn3.1.dict/dict/')
 
 # Set APA theme for plotting
 # Configurar o tema APA para figuras
@@ -122,66 +117,83 @@ write_csv(oanc_data, 'data/oanc_processed.csv')
 # Get synonyms and hypernyms from Wordnet
 # Identificar sinônimos e hiperônimos usando o Wordnet
 # ------------------------------------------------------------------------------
-# Get unique lemmas with POS tags
-# Identificar os lemas únicos com suas etiquetas POS
-lemmas = oanc_data %>%
-  distinct(lemma, pos)
+# Read synonyms and hypernyms retrieved from Wordnet. 
+# The data were retrieved using the code in lines ###-###. The code worked in a 
+# Debian 11 machine running R version 4.0.4 and OpenJDK version 11.0.20, and in 
+# the Posit Cloud (https://posit.cloud/) with R version 4.3.1, but failed in a 
+# Windows 10 machine with ... and in a Cloud Ocean environment running Ubuntu 
+# 18.04, R version 4.2.1 and default-jdk package version 
+# 2:1.11-68ubuntu1~18.04.1. Because of these inconsistencies, we provide the
+# retrieved data in a CSV file.
+synonyms_hypernyms = read_csv('data/wordnet_synonyms_hypernyms.csv')
 
-# Create tibble with synonyms and hypernyms
-# Criar tabela com sinônimos e hiperônimos
-synonyms_hypernyms = mapply(function(lemma, pos) {
-  pos_wordnet = NA
-  
-  # Map POS tags in the corpus with the correspondent POS tags in Wordnet
-  # Mapeia as etiquetas POS no corpus com as etiquetas POS no Wordnet
-  if(pos %in% c('VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ')) {
-    pos_wordnet = 'VERB'
-  } else if (pos %in% c('NN', 'NNS', 'NNP', 'NNPS')) {
-    pos_wordnet = 'NOUN'
-  } else if (pos %in% c('ADJ', 'JJ', 'JJR', 'JJS')) {
-    pos_wordnet = 'ADJECTIVE'
-  } else if (pos %in% c('ADV', 'RB', 'RBR', 'RBS')) {
-    pos_wordnet = 'ADVERB'
-  }
-  
-  if (is.na(pos_wordnet)) {
-    return(NA)
-  } else {
-    tibble(lemma = lemma,
-           pos = pos,
-           # Get synonyms from Wordnet
-           # Identificar sinônimos usando o Wordnet
-           synonyms = synonyms(lemma, pos_wordnet) %>%
-             paste(collapse = '|') %>%
-             str_to_lower(),
-           # Get hypernyms from Wordnet
-           # Identificar hiperônimos usando o Wordnet
-           hypernyms = tryCatch({
-             filter = getTermFilter('ExactMatchFilter', lemma, T)
-             terms = getIndexTerms(pos_wordnet, 1, filter)
-             synsets = getSynsets(terms[[1]])
-             
-             sapply(synsets, function(s) {
-               relatedSynsets = getRelatedSynsets(s, '@')
-               
-               sapply(relatedSynsets, getWord)
-             }) %>%
-               unlist() %>%
-               unique() %>%
-               paste0(collapse = '|') %>%
-               str_to_lower()
-           }, error = function(e) {
-             return(NULL)
-           }))
-  }
-}, lemmas$lemma, lemmas$pos, SIMPLIFY = F) %>% 
-  unname() %>%
-  .[!is.na(.)] %>%
-  bind_rows()
-
-# Write lemmas with their synonyms and hypernyms to a CSV file
-# Salvar lemas com seus sinônimos e hiperônimos em um arquivo CSV
-write_csv(synonyms_hypernyms, 'data/wordnet_synonyms_hypernyms.csv')
+# # Load required package
+# library(wordnet)
+# 
+# # Set Wordnet English dictionary
+# # Configurar o dicionário de inglês do Wordnet
+# setDict('wn3.1.dict/dict/')
+# 
+# # Get unique lemmas with POS tags
+# # Identificar os lemas únicos com suas etiquetas POS
+# lemmas = oanc_data %>%
+#   distinct(lemma, pos)
+# 
+# # Create tibble with synonyms and hypernyms
+# # Criar tabela com sinônimos e hiperônimos
+# synonyms_hypernyms = mapply(function(lemma, pos) {
+#   pos_wordnet = NA
+#   
+#   # Map POS tags in the corpus with the correspondent POS tags in Wordnet
+#   # Mapeia as etiquetas POS no corpus com as etiquetas POS no Wordnet
+#   if(pos %in% c('VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ')) {
+#     pos_wordnet = 'VERB'
+#   } else if (pos %in% c('NN', 'NNS', 'NNP', 'NNPS')) {
+#     pos_wordnet = 'NOUN'
+#   } else if (pos %in% c('ADJ', 'JJ', 'JJR', 'JJS')) {
+#     pos_wordnet = 'ADJECTIVE'
+#   } else if (pos %in% c('ADV', 'RB', 'RBR', 'RBS')) {
+#     pos_wordnet = 'ADVERB'
+#   }
+#   
+#   if (is.na(pos_wordnet)) {
+#     return(NA)
+#   } else {
+#     tibble(lemma = lemma,
+#            pos = pos,
+#            # Get synonyms from Wordnet
+#            # Identificar sinônimos usando o Wordnet
+#            synonyms = synonyms(lemma, pos_wordnet) %>%
+#              paste(collapse = '|') %>%
+#              str_to_lower(),
+#            # Get hypernyms from Wordnet
+#            # Identificar hiperônimos usando o Wordnet
+#            hypernyms = tryCatch({
+#              filter = getTermFilter('ExactMatchFilter', lemma, T)
+#              terms = getIndexTerms(pos_wordnet, 1, filter)
+#              synsets = getSynsets(terms[[1]])
+#              
+#              sapply(synsets, function(s) {
+#                relatedSynsets = getRelatedSynsets(s, '@')
+#                
+#                sapply(relatedSynsets, getWord)
+#              }) %>%
+#                unlist() %>%
+#                unique() %>%
+#                paste0(collapse = '|') %>%
+#                str_to_lower()
+#            }, error = function(e) {
+#              return(NULL)
+#            }))
+#   }
+# }, lemmas$lemma, lemmas$pos, SIMPLIFY = F) %>% 
+#   unname() %>%
+#   .[!is.na(.)] %>%
+#   bind_rows()
+# 
+# # Write lemmas with their synonyms and hypernyms to a CSV file
+# # Salvar lemas com seus sinônimos e hiperônimos em um arquivo CSV
+# write_csv(synonyms_hypernyms, 'data/wordnet_synonyms_hypernyms.csv')
 # ------------------------------------------------------------------------------
 
 # Generate pseudotexts
