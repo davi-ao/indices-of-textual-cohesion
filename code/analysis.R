@@ -106,7 +106,7 @@ oanc_data = lapply(paste0(oanc_dir, list.files(oanc_dir)), function(f) {
 
 # Write OANC processed data to a CSV file
 # Salvar dados processados do OANC em um arquivo CSV
-# write_csv(oanc_data, 'data/oanc_processed.csv')
+write_csv(oanc_data, 'data/oanc_processed.csv')
 # ------------------------------------------------------------------------------
 
 # Get synonyms and hypernyms from Wordnet
@@ -171,7 +171,7 @@ synonyms_hypernyms = mapply(function(lemma, pos) {
 
 # Write lemmas with their synonyms and hypernyms to a CSV file
 # Salvar lemas com seus sinônimos e hiperônimos em um arquivo CSV
-# write_csv(synonyms_hypernyms, 'data/wordnet_synonyms_hypernyms.csv')
+write_csv(synonyms_hypernyms, 'data/wordnet_synonyms_hypernyms.csv')
 # ------------------------------------------------------------------------------
 
 # Generate pseudotexts
@@ -216,7 +216,7 @@ pseudotexts = read_csv('data/oanc_pseudotexts_study.csv')
 
 # Write pseudotexts to a CSV file
 # Salvar pseudotextos em um arquivo CSV
-# write_csv(pseudotexts, 'data/oanc_pseudotexts.csv')
+write_csv(pseudotexts, 'data/oanc_pseudotexts.csv')
 # ------------------------------------------------------------------------------
 
 # Combine the data
@@ -239,7 +239,7 @@ data = oanc_data %>%
 
 # Write the combined data to a CSV file
 # Salvar os dados combinados em um arquivo CSV
-# write_csv(data, 'data/data.csv')
+write_csv(data, 'data/data.csv')
 #-------------------------------------------------------------------------------
 
 # Calculate the cohesion indices
@@ -559,8 +559,8 @@ mean_cohesion_summary = mean_cohesion_indices %>%
             SD = sd(value)) %>%
   arrange(type, index)
 
-# Write the results to a CSV file
-# Salva os resultados em um arquivo CSV
+# Write the results to CSV files
+# Salva os resultados em arquivos CSV
 write_csv(mean_cohesion_indices, 'results/mean_cohesion_indices.csv')
 write_csv(mean_cohesion_summary, 'results/mean_cohesion_indices_summary.csv')
 # ------------------------------------------------------------------------------
