@@ -24,11 +24,11 @@
 
 # Load required packages
 # Carregar pacotes necessários
-library(tidyverse)
-library(SnowballC)
-library(jtools)
-library(ggpattern)
-library(gridExtra)
+library(tidyverse, warn.conflicts = F, quietly = T)
+library(SnowballC, quietly = T)
+library(jtools, quietly = T)
+library(ggpattern, quietly = T)
+library(gridExtra, warn.conflicts = F, quietly = T)
 
 # Set APA theme for plotting
 # Configurar o tema APA para figuras
@@ -92,7 +92,7 @@ oanc_data = lapply(paste0(oanc_dir, list.files(oanc_dir)), function(f) {
     # Separate token and Part-Of-Speech (POS) tags
     # Separar tokens e etiquetas de categorias gramaticais (POS)
     separate_rows(token, sep = '\\|') %>% 
-    separate(token, c('name', 'value'), '_') %>%
+    separate(token, c('name', 'value'), '_', fill = 'right') %>%
     pivot_wider(id_cols = c(genre, text, sentence_id, token_id), 
                 names_from = name, 
                 values_from = value) %>%
@@ -134,7 +134,7 @@ write_csv(oanc_data, '../data/oanc_processed.csv')
 # 4.2.1 do R e o pacote default-jdk na versão 2:1.11-68ubuntu1~18.04.1. Por 
 # conta destas inconsistências, disponibilizamos os dados recuperados em um 
 # arquivo CSV.
-synonyms_hypernyms = read_csv('../data/wordnet_synonyms_hypernyms.csv',
+synonyms_hypernyms = read_csv('../data/wordnet_synonyms_hypernyms.csv', 
                               show_col_types = F)
 
 # # Load required package
@@ -481,7 +481,7 @@ mean_pairwise_cohesion_temp = lapply(
     lapply(q_js$clique_position %>% unique(), function(j) {
       q_j = q_js %>%
         filter(clique_position == j)
-  
+      
       tibble(
         genre = genre,
         text = t,
@@ -878,7 +878,7 @@ figure12 = read_delim('../data/taaco_results.csv',
                   'syn_overlap_sent_verb' = str_wrap('Synonym overlap (sentence, verb)', 32))) %>%
   ggplot(aes(genre, value, fill = genre)) +
   geom_boxplot() +
-  stat_summary(fun.y = mean, 
+  stat_summary(fun = mean, 
                geom = 'point',
                shape = 22,
                size = 2,
@@ -931,7 +931,7 @@ ggsave(filename = '../results/Figure13.svg',
 
 # Figure 14
 # Figura 14
-figure14 = grid.arrange(
+figure14 = arrangeGrob(
   indices_samples_plot %>%
     filter(index_type == 'Vertex Cohesion' & index == 'global') %>%
     ggplot(aes(value, 
@@ -982,7 +982,7 @@ ggsave(filename = '../results/Figure14.svg',
 
 # Figure 15
 # Figura 15
-figure15 = grid.arrange(
+figure15 = arrangeGrob(
   indices_samples_plot %>%
     filter(index_type == 'Vertex Cohesion' & index == 'local') %>%
     ggplot(aes(value, 
@@ -1033,7 +1033,7 @@ ggsave(filename = '../results/Figure15.svg',
 
 # Figure 16
 # Figura 16
-figure16 = grid.arrange(
+figure16 = arrangeGrob(
   indices_samples_plot %>%
     filter(index_type == 'Vertex Cohesion' & index == 'pairwise') %>%
     ggplot(aes(value, 
