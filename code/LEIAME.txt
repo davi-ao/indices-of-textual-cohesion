@@ -1,0 +1,45 @@
+Analisar índices de coesão textual utilizando redes semânticas de cliques
+
+Autores: Davi Alves Oliveira, Valter de Senna, e Hernane Borges de Barros 
+Pereira
+
+Esse script foi desenvolvido e utilizado no estudo reportado no artigo “Indices
+of Textual Cohesion by Lexical Repetition Based on Semantic Networks of 
+Cliques” (“Índices de Coesão Textual por Repetição Lexical Baseados em Redes 
+Semânticas de Cliques”) submetido ao periódico Expert Systems with Applications
+(https://www.sciencedirect.com/journal/expert-systems-with-applications) em 
+2023. Uma tradução do abstract e das palavras-chave do artigo pode ser 
+conferida abaixo. O script utiliza dados do Open American National Corpus 
+(OANC - https://anc.org/). Os dados consistem em uma amostra de 60 textos que
+foram modificados antes do uso. As modificações foram, conforme descrito no 
+artigo, “títulos e informações consideradas paratextual (por exemplo, 
+declarações de conflito de interesses, lista de abreviaturas) foram removidas,
+e pontos não utilizados como delimitadores de sentenças foram removidos ou 
+substituídos. Por exemplo, a abreviatura ‘b.c.’ foi substituída por ‘bc’,
+abreviaturas comuns foram substituídas pela respectiva forma completa (por 
+exemplo, ‘fig.’ substituído por ‘figure’), e separações decimais foram trocados
+de ‘.’ para ‘;’, de forma que ‘1.0’ tornou-se ‘1;0’.”.
+
+Tradução do Abstract
+A coesão é uma das principais características definidoras da textualidade. 
+Existe uma lacuna de abordagens à coesão textual que se beneficiem de alta
+implementabilidade computacional, e compatibilidade com teorias estabelecidas
+de organização e compreensão textuais. O objetivo geral deste estudo foi 
+definir índices de coesão textual baseados na repetição lexical e em redes
+semânticas de cliques que meçam coesão e que sejam compatíveis com as teorias
+mencionadas. Como objetivos específicos, o estudo objetivou desenvolver uma
+taxonomia melhorada para a repetição lexical e analisar o comportamento dos 
+índices propostos com uma amostra de textos de diferentes gêneros. Seis indices
+foram propostos, e 60 textos de seis gêneros diferentes foram analisados. Os
+resultados mostraram que os índices conseguem capturar diferentes padrões de
+coesão lexical que podem ser explorados, por exemplo, em tarefas de 
+classificação aplicadas a textos, em tarefas de resumo automático, e na 
+adaptação de materiais de leitura com o objetivo de melhorar a leiturabilidade
+e compreensibilidade de textos por leitores menos proficientes. Adicionalmente,
+os padrões observados na análise de textos completos também foram observados na
+análise das primeiras 10 a 60 sentenças dos textos, dependendo do índice 
+considerado, sugerindo que as primeiras 10 a 60 sentenças de um texto são 
+suficientes para a análise da coesão lexical.
+
+Palavras-chave: Coesão textual, teoria das redes, redes semânticas, redes de 
+cliques

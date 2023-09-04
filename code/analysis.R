@@ -134,7 +134,8 @@ write_csv(oanc_data, '../data/oanc_processed.csv')
 # 4.2.1 do R e o pacote default-jdk na versão 2:1.11-68ubuntu1~18.04.1. Por 
 # conta destas inconsistências, disponibilizamos os dados recuperados em um 
 # arquivo CSV.
-synonyms_hypernyms = read_csv('../data/wordnet_synonyms_hypernyms.csv')
+synonyms_hypernyms = read_csv('../data/wordnet_synonyms_hypernyms.csv',
+                              show_col_types = F)
 
 # # Load required package
 # library(wordnet)
@@ -212,7 +213,7 @@ synonyms_hypernyms = read_csv('../data/wordnet_synonyms_hypernyms.csv')
 # comment line 215 and uncomment and run the code in lines 217-250 
 # Para gerar novos pseudotextos ao invés de usar os mesmos reportados no estudo,
 # comente a linha 215 e descomente e rode o código nas linhas 217-250
-pseudotexts = read_csv('../data/oanc_pseudotexts_study.csv')
+pseudotexts = read_csv('../data/oanc_pseudotexts_study.csv', show_col_types = F)
 
 # # Get the number of texts in the corpus
 # # Identificar o número de textos no corpus
@@ -853,7 +854,8 @@ ggsave(filename = '../results/Figure11.svg',
 # Figura 12
 figure12 = read_delim('../data/taaco_results.csv', 
                       delim = ';', 
-                      locale = locale(decimal_mark = ',')) %>%
+                      locale = locale(decimal_mark = ','),
+                      show_col_types = F) %>%
   mutate(corpus = corpus %>%
            as_factor() %>%
            recode('text' = 'Texts',
