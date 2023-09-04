@@ -118,13 +118,22 @@ write_csv(oanc_data, 'data/oanc_processed.csv')
 # Identificar sinônimos e hiperônimos usando o Wordnet
 # ------------------------------------------------------------------------------
 # Read synonyms and hypernyms retrieved from Wordnet. 
-# The data were retrieved using the code in lines ###-###. The code worked in a 
+# The data were retrieved using the code in lines 139-205. The code worked in a 
 # Debian 11 machine running R version 4.0.4 and OpenJDK version 11.0.20, and in 
 # the Posit Cloud (https://posit.cloud/) with R version 4.3.1, but failed in a 
-# Windows 10 machine with ... and in a Cloud Ocean environment running Ubuntu 
-# 18.04, R version 4.2.1 and default-jdk package version 
-# 2:1.11-68ubuntu1~18.04.1. Because of these inconsistencies, we provide the
-# retrieved data in a CSV file.
+# Windows 10 machine with R version 4.3.1 and Oracle Java SE 17, and in a Cloud 
+# Ocean environment running Ubuntu 18.04, R version 4.2.1 and default-jdk 
+# package version 2:1.11-68ubuntu1~18.04.1. Because of these inconsistencies, we
+# provide the retrieved data in a CSV file.
+# Ler sinônimos e hiperônimos recuperados do Wordnet.
+# Os dados foram recuperados usando o código nas linhas 139-205. O código 
+# funcionou em uma máquina Debian 11 rodando a versão 4.0.4 do R e a versão 
+# 11.0.20 do OpenJDK, e na Posit Cloud (https://posit.cloud/) com a versão 4.3.1
+# do R, mas falhou em uma máquina Windows 10 com a versão 4.3.1 do R e o Java SE
+# 17 da Oracle, e em um ambiente do Cloud Ocean rodando Ubuntu 18.04, versão 
+# 4.2.1 do R e o pacote default-jdk na versão 2:1.11-68ubuntu1~18.04.1. Por 
+# conta destas inconsistências, disponibilizamos os dados recuperados em um 
+# arquivo CSV.
 synonyms_hypernyms = read_csv('data/wordnet_synonyms_hypernyms.csv')
 
 # # Load required package
@@ -200,9 +209,9 @@ synonyms_hypernyms = read_csv('data/wordnet_synonyms_hypernyms.csv')
 # Gerar pseudotextos
 # ------------------------------------------------------------------------------
 # To generate new pseudotexts instead of usings the ones reported in the study, 
-# comment line 194 and uncomment and run the code in lines 196-225 
+# comment line 215 and uncomment and run the code in lines 217-250 
 # Para gerar novos pseudotextos ao invés de usar os mesmos reportados no estudo,
-# comente a linha 194 e descomente e rode o código nas linhas 196-225
+# comente a linha 215 e descomente e rode o código nas linhas 217-250
 pseudotexts = read_csv('data/oanc_pseudotexts_study.csv')
 
 # # Get the number of texts in the corpus
@@ -235,10 +244,10 @@ pseudotexts = read_csv('data/oanc_pseudotexts_study.csv')
 #     select(-text_clique_id)
 # }) %>%
 #   bind_rows()
-
-# Write pseudotexts to a CSV file
-# Salvar pseudotextos em um arquivo CSV
-write_csv(pseudotexts, 'data/oanc_pseudotexts.csv')
+# 
+# # Write pseudotexts to a CSV file
+# # Salvar pseudotextos em um arquivo CSV
+# write_csv(pseudotexts, 'data/oanc_pseudotexts.csv')
 # ------------------------------------------------------------------------------
 
 # Combine the data
