@@ -39,7 +39,7 @@ theme_set(theme_apa())
 # ------------------------------------------------------------------------------
 # Inform directory with the OANC XML files
 # Informar diretório com os arquivos XML do OANC
-oanc_dir = 'data/oanc_xml/'
+oanc_dir = '../data/oanc_xml/'
 
 # Read OANC XML files
 # Ler arquivos XML do OANC
@@ -111,7 +111,7 @@ oanc_data = lapply(paste0(oanc_dir, list.files(oanc_dir)), function(f) {
 
 # Write OANC processed data to a CSV file
 # Salvar dados processados do OANC em um arquivo CSV
-write_csv(oanc_data, 'data/oanc_processed.csv')
+write_csv(oanc_data, '../data/oanc_processed.csv')
 # ------------------------------------------------------------------------------
 
 # Get synonyms and hypernyms from Wordnet
@@ -134,14 +134,14 @@ write_csv(oanc_data, 'data/oanc_processed.csv')
 # 4.2.1 do R e o pacote default-jdk na versão 2:1.11-68ubuntu1~18.04.1. Por 
 # conta destas inconsistências, disponibilizamos os dados recuperados em um 
 # arquivo CSV.
-synonyms_hypernyms = read_csv('data/wordnet_synonyms_hypernyms.csv')
+synonyms_hypernyms = read_csv('../data/wordnet_synonyms_hypernyms.csv')
 
 # # Load required package
 # library(wordnet)
 # 
 # # Set Wordnet English dictionary
 # # Configurar o dicionário de inglês do Wordnet
-# setDict('wn3.1.dict/dict/')
+# setDict('../data/wn3.1.dict/dict/')
 # 
 # # Get unique lemmas with POS tags
 # # Identificar os lemas únicos com suas etiquetas POS
@@ -202,7 +202,7 @@ synonyms_hypernyms = read_csv('data/wordnet_synonyms_hypernyms.csv')
 # 
 # # Write lemmas with their synonyms and hypernyms to a CSV file
 # # Salvar lemas com seus sinônimos e hiperônimos em um arquivo CSV
-# write_csv(synonyms_hypernyms, 'data/wordnet_synonyms_hypernyms.csv')
+# write_csv(synonyms_hypernyms, '../data/wordnet_synonyms_hypernyms.csv')
 # ------------------------------------------------------------------------------
 
 # Generate pseudotexts
@@ -212,7 +212,7 @@ synonyms_hypernyms = read_csv('data/wordnet_synonyms_hypernyms.csv')
 # comment line 215 and uncomment and run the code in lines 217-250 
 # Para gerar novos pseudotextos ao invés de usar os mesmos reportados no estudo,
 # comente a linha 215 e descomente e rode o código nas linhas 217-250
-pseudotexts = read_csv('data/oanc_pseudotexts_study.csv')
+pseudotexts = read_csv('../data/oanc_pseudotexts_study.csv')
 
 # # Get the number of texts in the corpus
 # # Identificar o número de textos no corpus
@@ -247,7 +247,7 @@ pseudotexts = read_csv('data/oanc_pseudotexts_study.csv')
 # 
 # # Write pseudotexts to a CSV file
 # # Salvar pseudotextos em um arquivo CSV
-# write_csv(pseudotexts, 'data/oanc_pseudotexts.csv')
+# write_csv(pseudotexts, '../data/oanc_pseudotexts.csv')
 # ------------------------------------------------------------------------------
 
 # Combine the data
@@ -270,7 +270,7 @@ data = oanc_data %>%
 
 # Write the combined data to a CSV file
 # Salvar os dados combinados em um arquivo CSV
-write_csv(data, 'data/data.csv')
+write_csv(data, '../data/data.csv')
 #-------------------------------------------------------------------------------
 
 # Calculate the cohesion indices
@@ -565,7 +565,7 @@ indices = global_backward_cohesion %>%
 
 # Write the results to a CSV file
 # Salva os resultados em um arquivo CSV
-write_csv(indices, 'results/cohesion_indices.csv')
+write_csv(indices, '../results/cohesion_indices.csv')
 # ------------------------------------------------------------------------------
 
 # Calculate the mean cohesion indices of texts and pseudotexts
@@ -592,8 +592,8 @@ mean_cohesion_summary = mean_cohesion_indices %>%
 
 # Write the results to CSV files
 # Salva os resultados em arquivos CSV
-write_csv(mean_cohesion_indices, 'results/mean_cohesion_indices.csv')
-write_csv(mean_cohesion_summary, 'results/mean_cohesion_indices_summary.csv')
+write_csv(mean_cohesion_indices, '../results/mean_cohesion_indices.csv')
+write_csv(mean_cohesion_summary, '../results/mean_cohesion_indices_summary.csv')
 # ------------------------------------------------------------------------------
 
 # Calculate the empirical probabilities
@@ -617,7 +617,7 @@ empirical_probabilities = indices %>%
 # Write the results to a CSV file
 # Salva os resultados em um arquivo CSV
 write_csv(empirical_probabilities, 
-          'results/indices_empirical_probabilities.csv')
+          '../results/indices_empirical_probabilities.csv')
 # ------------------------------------------------------------------------------
 
 # Recalculate the indices with sample of sentences
@@ -772,7 +772,7 @@ indices_samples = indices_samples_temp %>%
 
 # Write the results to a CSV file
 # Salva os resultados em um arquivo CSV
-write_csv(indices_samples, 'results/cohesion_indices_samples.csv')
+write_csv(indices_samples, '../results/cohesion_indices_samples.csv')
 # ------------------------------------------------------------------------------
 
 # Plot figures
@@ -841,7 +841,7 @@ figure11 = indices_plot %>%
   xlab('') +
   theme(axis.text.x = element_blank())
 
-ggsave(filename = 'results/figures/Figure11.svg',
+ggsave(filename = '../results/Figure11.svg',
        plot = figure11,
        device = 'svg',
        width = 24.7,
@@ -851,7 +851,7 @@ ggsave(filename = 'results/figures/Figure11.svg',
 
 # Figure 12
 # Figura 12
-figure12 = read_delim('data/taaco_results.csv', 
+figure12 = read_delim('../data/taaco_results.csv', 
                       delim = ';', 
                       locale = locale(decimal_mark = ',')) %>%
   mutate(corpus = corpus %>%
@@ -890,7 +890,7 @@ figure12 = read_delim('data/taaco_results.csv',
   theme(axis.text.x = element_blank()) +
   ylab('Index value')
 
-ggsave(filename = 'results/figures/Figure12.svg',
+ggsave(filename = '../results/Figure12.svg',
        plot = figure12,
        device = 'svg',
        width = 24.7,
@@ -919,7 +919,7 @@ figure13 = indices_plot %>%
   xlab('Value') +
   ylab('Density')
 
-ggsave(filename = 'results/figures/Figure13.svg',
+ggsave(filename = '../results/Figure13.svg',
        plot = figure13,
        device = 'svg',
        width = 24.7,
@@ -970,7 +970,7 @@ figure14 = grid.arrange(
     ylab('Density')
 )
 
-ggsave(filename = 'results/figures/Figure14.svg',
+ggsave(filename = '../results/Figure14.svg',
        plot = figure14,
        device = 'svg',
        width = 24.7,
@@ -1021,7 +1021,7 @@ figure15 = grid.arrange(
     ylab('Density')
 )
 
-ggsave(filename = 'results/figures/Figure15.svg',
+ggsave(filename = '../results/Figure15.svg',
        plot = figure15,
        device = 'svg',
        width = 24.7,
@@ -1072,7 +1072,7 @@ figure16 = grid.arrange(
     ylab('Density')
 )
 
-ggsave(filename = 'results/figures/Figure16.svg',
+ggsave(filename = '../results/Figure16.svg',
        plot = figure16,
        device = 'svg',
        width = 24.7,
