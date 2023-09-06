@@ -8,8 +8,8 @@
 # Autores: Davi Alves Oliveira, Valter de Senna, e Hernane Borges de Barros 
 # Pereira 
 #
-# Last update: September 04, 2023
-# Última atualização: 04/09/2023
+# Last update: September 05, 2023
+# Última atualização: 05/09/2023
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
@@ -24,11 +24,11 @@
 
 # Load required packages
 # Carregar pacotes necessários
-library(tidyverse, warn.conflicts = F, quietly = T)
-library(SnowballC, quietly = T)
-library(jtools, quietly = T)
-library(ggpattern, quietly = T)
-library(gridExtra, warn.conflicts = F, quietly = T)
+library(tidyverse)
+library(SnowballC)
+library(jtools)
+library(ggpattern)
+library(gridExtra)
 
 # Set APA theme for plotting
 # Configurar o tema APA para figuras
@@ -776,6 +776,29 @@ indices_samples = indices_samples_temp %>%
 write_csv(indices_samples, '../results/cohesion_indices_samples.csv')
 # ------------------------------------------------------------------------------
 
+# Recalculate the empirical probabilities with samples of sentences
+# Recalcular as probabilidades empíricas com amostras de períodos
+# ------------------------------------------------------------------------------
+# Empirical probabilities of the vertex cohesion indices
+# Probabilidades empíricas dos índices de coesão de vértices
+empirical_probabilities_samples = indices_samples %>%
+  mutate(corpus = ifelse(genre == 'pseudotext', 'pseudotexts', 'texts')) %>%
+  slice(rep(1:n(), each = 9)) %>%
+  mutate(cutoff = rep(seq(.1, .9, .1), n()/9)) %>%
+  group_by(corpus, n_sentences, index, cutoff) %>%
+  # Calculate the empirical probabilities
+  # Calcular as probabilidades empíricas
+  summarise(p = mean(v >= cutoff)) %>%
+  pivot_wider(names_from = corpus, values_from = p) %>%
+  # Calculate the differences between the probabilites from texts and pseudotexts
+  # Calcular as diferenças entre as probabilidades de textos e pseudotextos
+  mutate(difference = texts - pseudotexts)
+
+# Write the results to a CSV file
+# Salva os resultados em um arquivo CSV
+write_csv(empirical_probabilities, 
+          '../results/indices_empirical_probabilities.csv')
+
 # Plot figures
 # Gerar figuras
 # ------------------------------------------------------------------------------
@@ -822,9 +845,9 @@ indices_samples_plot = indices_samples %>%
 figure11 = indices_plot %>%
   mutate(index = index %>%
            as_factor() %>%
-           recode('global' = 'Text Global Backward Cohesion',
-                  'local' = 'Text Local Backward Cohesion',
-                  'pairwise' = 'Text Mean Pairwise Cohesion')) %>%
+           recode('global' = 'Mean Global Backward Cohesion',
+                  'local' = 'Mean Local Backward Cohesion',
+                  'pairwise' = 'Overall Mean Pairwise Cohesion')) %>%
   group_by(corpus, genre, text, index_type, index) %>%
   summarize(`Mean indices` = mean(value)) %>%
   ggplot(aes(genre, `Mean indices`, fill = genre, group = genre)) +
