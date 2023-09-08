@@ -819,7 +819,7 @@ indices_plot = indices %>%
                   'icic' = 'Letters',
                   'media' = 'Government media',
                   'plos' = 'Scientific and medical articles',
-                  'pseudo' = 'Pseudotexts',
+                  'pseudotext' = 'Pseudotexts',
                   'slate' = 'Magazine articles'))
 
 indices_samples_plot = indices_samples %>%
@@ -837,7 +837,7 @@ indices_samples_plot = indices_samples %>%
                   'icic' = 'Letters',
                   'media' = 'Government media',
                   'plos' = 'Scientific and medical articles',
-                  'pseudo' = 'Pseudotexts',
+                  'pseudotext' = 'Pseudotexts',
                   'slate' = 'Magazine articles'))
 
 # Figure 11
@@ -969,7 +969,7 @@ figure14 = arrangeGrob(
           legend.direction = 'horizontal',
           legend.key.size = unit(.5, 'cm'),
           plot.title = element_text(size = 12, hjust = .5, face = 'plain'),
-          axis.text.x = element_text(size = 7)) +
+          axis.text.x = element_text(size = 6)) +
     scale_fill_brewer(palette = 'Dark2') +
     ggtitle('Global Backward Vertex Cohesion\nNumber of sentences') +
     xlab('Value') +
@@ -988,7 +988,7 @@ figure14 = arrangeGrob(
           legend.direction = 'horizontal',
           legend.key.size = unit(.5, 'cm'),
           plot.title = element_text(size = 12, hjust = .5, face = 'plain'),
-          axis.text.x = element_text(size = 7)) +
+          axis.text.x = element_text(size = 6)) +
     scale_fill_brewer(palette = 'Dark2') +
     ggtitle('Global Backward Edge Cohesion\nNumber of sentences') +
     xlab('Value') +
@@ -1020,7 +1020,7 @@ figure15 = arrangeGrob(
           legend.direction = 'horizontal',
           legend.key.size = unit(.5, 'cm'),
           plot.title = element_text(size = 12, hjust = .5, face = 'plain'),
-          axis.text.x = element_text(size = 7)) +
+          axis.text.x = element_text(size = 6)) +
     scale_fill_brewer(palette = 'Dark2') +
     ggtitle('Local Backward Vertex Cohesion\nNumber of sentences') +
     xlab('Value') +
@@ -1039,7 +1039,7 @@ figure15 = arrangeGrob(
           legend.direction = 'horizontal',
           legend.key.size = unit(.5, 'cm'),
           plot.title = element_text(size = 12, hjust = .5, face = 'plain'),
-          axis.text.x = element_text(size = 7)) +
+          axis.text.x = element_text(size = 6)) +
     scale_fill_brewer(palette = 'Dark2') +
     ggtitle('Local Backward Edge Cohesion\nNumber of sentences') +
     xlab('Value') +
@@ -1071,7 +1071,7 @@ figure16 = arrangeGrob(
           legend.direction = 'horizontal',
           legend.key.size = unit(.5, 'cm'),
           plot.title = element_text(size = 12, hjust = .5, face = 'plain'),
-          axis.text.x = element_text(size = 7)) +
+          axis.text.x = element_text(size = 6)) +
     scale_fill_brewer(palette = 'Dark2') +
     ggtitle('Mean Pairwise Vertex Cohesion\nNumber of sentences') +
     xlab('Value') +
@@ -1090,7 +1090,7 @@ figure16 = arrangeGrob(
           legend.direction = 'horizontal',
           legend.key.size = unit(.5, 'cm'),
           plot.title = element_text(size = 12, hjust = .5, face = 'plain'),
-          axis.text.x = element_text(size = 7)) +
+          axis.text.x = element_text(size = 6)) +
     scale_fill_brewer(palette = 'Dark2') +
     ggtitle('Mean Pairwise Edge Cohesion\nNumber of sentences') +
     xlab('Value') +
